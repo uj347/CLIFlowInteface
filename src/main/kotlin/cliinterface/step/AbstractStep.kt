@@ -75,6 +75,16 @@ interface AbstractStep : Flow<Unit> {
             }
         }
     }
+
+    suspend fun <T, R> Flow<T>.flowChainLayoutInsertion(
+        block: suspend (stateTokenInsertion:MutableSet<AbstractPropety<*>>?) -> R
+    ): Flow<R> {
+        return flow<R> {
+            this@flowChainLayoutInsertion.collect {
+                emit(block(stateToken ))
+            }
+        }
+    }
 }
 
 

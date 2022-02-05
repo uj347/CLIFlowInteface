@@ -1,6 +1,7 @@
 package cliinterface.step
 
 
+import cliinterface.properties.AbstractPropety
 import cliinterface.stack.IStackController
 import cliinterface.step.stepoptions.StepOptionBundle
 import kotlinx.coroutines.flow.FlowCollector
@@ -11,7 +12,7 @@ class OptionStep private constructor(
     parentStep: AbstractStep?,
     multiOptional:Boolean,
     associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>,
-    layoutBlock:suspend (Unit)->Unit,
+    layoutBlock:suspend (MutableSet<AbstractPropety<*>>?)->Unit,
     inputBlock:suspend (Unit)->String,
     processingBlock:suspend (String, AbstractStep, IStackController?) -> Unit,
     onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit= { emptyCompletionBlock }
@@ -42,9 +43,8 @@ companion object{
     const val GO_BACK_OPTION_LITERALL="Back"
 
     private  fun generateLayoutBlock (associationMap:Map<Int,Pair<String,
-            suspend (String, AbstractStep, IStackController?) -> Unit>>,
-                                      message: String):suspend (Unit)->Unit{
-       return {
+            suspend (String, AbstractStep, IStackController?) -> Unit>>, message: String):suspend (MutableSet<AbstractPropety<*>>?)->Unit{
+       return {stateToken->
            println(message)
            for (entry in associationMap) {
                println("${entry.key}. ${entry.value.first}")

@@ -1,19 +1,21 @@
 package cliinterface.properties
 
 import cliinterface.step.AbstractStep
+import kotlin.reflect.KClass
 
-interface AbstractPropety <T> {
+interface AbstractProperty <T:Any> {
     val name:String
     val authorStep:AbstractStep?
     val authorAdress:List<String>
         get() = authorStep?.adress?: listOf(name)
     val value:T
+    val type:KClass<T>
 }
 
 
-fun AbstractPropety<*>.isAuthoredByStepOrDescendant(checkStep: AbstractStep):Boolean{
+fun AbstractProperty<*>.isAuthoredByStepOrDescendant(checkStep: AbstractStep):Boolean{
     return authorAdress.contains(checkStep.name)
 }
-fun AbstractPropety<*>.isAuthoredByStepOrDescendant(checkStepName: String):Boolean{
+fun AbstractProperty<*>.isAuthoredByStepOrDescendant(checkStepName: String):Boolean{
     return authorAdress.contains(checkStepName)
 }

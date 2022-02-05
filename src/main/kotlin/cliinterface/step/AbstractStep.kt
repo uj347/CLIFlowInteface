@@ -1,6 +1,6 @@
 package cliinterface.step
 
-import cliinterface.properties.AbstractPropety
+import cliinterface.properties.AbstractProperty
 import cliinterface.properties.SimpleProperty
 import cliinterface.properties.isAuthoredByStepOrDescendant
 import cliinterface.stack.IStackController
@@ -15,7 +15,7 @@ interface AbstractStep : Flow<Unit> {
 
     val adress: LinkedList<String>
 
-    var stateToken: MutableSet<AbstractPropety<*>>?
+    var stateToken: MutableSet<AbstractProperty<*>>?
 
     val layoutEtap: suspend Flow<Unit>.() -> Flow<Unit>
 
@@ -77,7 +77,7 @@ interface AbstractStep : Flow<Unit> {
     }
 
     suspend fun <T, R> Flow<T>.flowChainLayoutInsertion(
-        block: suspend (stateTokenInsertion:MutableSet<AbstractPropety<*>>?) -> R
+        block: suspend (stateTokenInsertion:MutableSet<AbstractProperty<*>>?) -> R
     ): Flow<R> {
         return flow<R> {
             this@flowChainLayoutInsertion.collect {

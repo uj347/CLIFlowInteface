@@ -1,6 +1,6 @@
 package cliinterface
 
-import cliinterface.properties.AbstractPropety
+import cliinterface.properties.AbstractProperty
 import cliinterface.stack.DaggerStackController
 import cliinterface.step.AbstractStep
 import dagger.*
@@ -14,7 +14,7 @@ interface CLIModule{
         @Singleton
         @StateToken
         @Binds
-        fun providePropertiesToken(primerSet:MutableSet<AbstractPropety<*>>):MutableSet<AbstractPropety<*>>
+        fun providePropertiesToken(primerSet:MutableSet<AbstractProperty<*>>):MutableSet<AbstractProperty<*>>
 
 
     @AssistedFactory

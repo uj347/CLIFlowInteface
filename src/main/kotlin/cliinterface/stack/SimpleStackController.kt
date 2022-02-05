@@ -1,6 +1,6 @@
 package cliinterface.stack
 
-import cliinterface.properties.AbstractPropety
+import cliinterface.properties.AbstractProperty
 import cliinterface.step.AbstractStep
 import cliinterface.step.isSameOrDescendantOf
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
 class SimpleStackController constructor(
     override val firstStep: AbstractStep,
     override val terminalStep: AbstractStep?,
-    override val stateToken: MutableSet<AbstractPropety<*>>,
+    override val stateToken: MutableSet<AbstractProperty<*>>,
     controllerContext: CoroutineContext
 ) :
     IStackController {

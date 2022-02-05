@@ -4,7 +4,7 @@ import cliinterface.ControllerContext
 import cliinterface.FIRST_STEP_LITERAL
 import cliinterface.StateToken
 import cliinterface.TERMINAL_STEP_LITERAL
-import cliinterface.properties.AbstractPropety
+import cliinterface.properties.AbstractProperty
 import cliinterface.step.AbstractStep
 import cliinterface.step.isSameOrDescendantOf
 import dagger.assisted.Assisted
@@ -18,7 +18,7 @@ import kotlin.coroutines.CoroutineContext
 
 class DaggerStackController @AssistedInject constructor(@Assisted(FIRST_STEP_LITERAL) override val firstStep:AbstractStep,
                                                         @Assisted (TERMINAL_STEP_LITERAL) override val terminalStep:AbstractStep?,
-                                                        @StateToken override val stateToken: MutableSet<AbstractPropety<*>>,
+                                                        @StateToken override val stateToken: MutableSet<AbstractProperty<*>>,
                                                         @ControllerContext controllerContext: CoroutineContext) :
     IStackController {
 

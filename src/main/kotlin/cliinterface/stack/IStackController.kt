@@ -1,6 +1,6 @@
 package cliinterface.stack
 
-import cliinterface.properties.AbstractPropety
+import cliinterface.properties.AbstractProperty
 import cliinterface.step.AbstractStep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -8,7 +8,7 @@ import kotlinx.coroutines.Job
 interface IStackController {
     val firstStep: AbstractStep
     val terminalStep: AbstractStep?
-    val stateToken: MutableSet<AbstractPropety<*>>
+    val stateToken: MutableSet<AbstractProperty<*>>
     val controllerScope: CoroutineScope
     val isEmpty: Boolean
 

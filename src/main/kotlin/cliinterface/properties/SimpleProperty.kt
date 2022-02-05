@@ -1,13 +1,15 @@
 package cliinterface.properties
 
 import cliinterface.step.AbstractStep
+import kotlin.reflect.KClass
 
 
- data class SimpleProperty<T>(
+data class SimpleProperty<T:Any>(
      override val name:String,
      override val authorStep: AbstractStep?,
-     override val value: T
-   ):AbstractPropety<T>{
+     override val value: T,
+     override val type: KClass<T>
+   ):AbstractProperty<T>{
      override fun equals(other: Any?): Boolean {
          if (this === other) return true
          if (javaClass != other?.javaClass) return false

@@ -61,10 +61,6 @@ interface AbstractStep : Flow<Unit> {
         runStackController?.push(newStep)
     }
 
-    fun <T> addAssociatedProperty(name: String, value: T) {
-        stateToken?.add(SimpleProperty<T>(name, this, value))
-    }
-
 
     suspend fun <T, R> Flow<T>.flowChainProcessingInsertion(
         block: suspend (received: T, selfReference: AbstractStep, runStackController: IStackController?) -> R
@@ -86,6 +82,10 @@ interface AbstractStep : Flow<Unit> {
         }
     }
 }
+
+inline fun < reified T:Any> AbstractStep.addAssociatedProperty(name: String, value: T) {
+     stateToken?.add(SimpleProperty<T>(name, this, value, T::class))
+ }
 
 
 suspend fun <T, R> Flow<T>.flowChainInsertion(

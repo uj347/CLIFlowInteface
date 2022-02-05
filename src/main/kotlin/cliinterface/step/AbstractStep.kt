@@ -84,8 +84,12 @@ interface AbstractStep : Flow<Unit> {
 }
 
 inline fun < reified T:Any> AbstractStep.addAssociatedProperty(name: String, value: T) {
-     stateToken?.add(SimpleProperty<T>(name, this, value, T::class))
+     stateToken!!.add(SimpleProperty<T>(name, this, value, T::class))
  }
+
+inline fun < reified T:Any> AbstractStep.addAssociatedProperty(property: AbstractProperty<T>) {
+   stateToken!!.add(SimpleProperty<T>(property.name,this,property.value,T::class))
+}
 
 
 suspend fun <T, R> Flow<T>.flowChainInsertion(

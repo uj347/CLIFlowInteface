@@ -8,109 +8,124 @@ import kotlinx.coroutines.flow.FlowCollector
 import java.util.*
 
 class OptionStep private constructor(
-    name:String,
+    name: String,
     parentStep: AbstractStep?,
-    multiOptional:Boolean,
+    multiOptional: Boolean,
     associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>,
-    layoutBlock:suspend (MutableSet<AbstractProperty<*>>?)->Unit,
-    inputBlock:suspend (Unit)->String,
-    processingBlock:suspend (String, AbstractStep, IStackController?) -> Unit,
-    onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit= { emptyCompletionBlock }
+    layoutBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> Unit,
+    inputBlock: suspend (Unit) -> String,
+    processingBlock: suspend (String, AbstractStep, IStackController?) -> Unit,
+    onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit = { emptyCompletionBlock }
 ) : SimpleStep(
-name,parentStep,layoutBlock,inputBlock,processingBlock,onCompletionBlock
+    name, parentStep, layoutBlock, inputBlock, processingBlock, onCompletionBlock
 ) {
 
-companion object{
-    fun create(
-        name: String,
-        parentStep: AbstractStep?,
-        multiOptional: Boolean,
-        message:String,
-        optionBundle: StepOptionBundle
-    ):OptionStep{
-        val associationMap= formOptionAssociationMap(optionBundle)
-        val layoutBlock= generateLayoutBlock(associationMap, message)
-        val processingBlock= generateProcessingBlock(associationMap,multiOptional)
-        return OptionStep(name,
-            parentStep,
-            multiOptional,
-            associationMap,
-            layoutBlock,
-            { oneLineCliInputBlock() },
-            processingBlock)
-    }
 
-    const val GO_BACK_OPTION_LITERALL="Back"
+    companion object {
+        fun create(
+            name: String,
+            parentStep: AbstractStep?,
+            multiOptional: Boolean,
+            message: String,
+            optionBundle: StepOptionBundle
+        ): OptionStep {
+            val associationMap = formOptionAssociationMap(optionBundle)
+            val layoutBlock = generateLayoutBlock(associationMap, message)
+            val processingBlock = generateProcessingBlock(associationMap, multiOptional)
+            return OptionStep(
+                name,
+                parentStep,
+                multiOptional,
+                associationMap,
+                layoutBlock,
+                { oneLineCliInputBlock() },
+                processingBlock
+            )
+        }
 
-    private  fun generateLayoutBlock (associationMap:Map<Int,Pair<String,
-            suspend (String, AbstractStep, IStackController?) -> Unit>>, message: String):suspend (MutableSet<AbstractProperty<*>>?)->Unit{
-       return {stateToken->
-           println(message)
-           for (entry in associationMap) {
-               println("${entry.key}. ${entry.value.first}")
-           }
-       }
-    }
+        const val GO_BACK_OPTION_LITERALL = "Back"
 
-    private fun generateProcessingBlock(associationMap: Map<Int, Pair<String,
-            suspend (String, AbstractStep, IStackController?) -> Unit>>, multiOptional:Boolean)
-    :suspend (String, AbstractStep, IStackController?) -> Unit{
-        return {strValue,selfRef,stackController->
-            if (checkStringInputValidity(strValue,multiOptional)){
-                val intInput=strValue.split(" ").map{it.toInt()}
-                when{
-                    intInput.contains(0)->associationMap.get(0)?.second?.invoke(strValue,selfRef,stackController)
-                    else->{
-                        for (integer in intInput){
-                            associationMap.get(integer)?.second?.invoke(strValue,selfRef,stackController)
+        private fun generateLayoutBlock(
+            associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>,
+            message: String
+        ):
+                suspend (Unit, AbstractStep, IStackController?) -> Unit {
+            return { unit: Unit, abstractStep: AbstractStep, iStackController: IStackController? ->
+                println(message)
+                for (entry in associationMap) {
+                    println("${entry.key}. ${entry.value.first}")
+                }
+            }
+        }
+
+        private fun generateProcessingBlock(
+            associationMap: Map<Int, Pair<String,
+                    suspend (String, AbstractStep, IStackController?) -> Unit>>, multiOptional: Boolean
+        )
+                : suspend (String, AbstractStep, IStackController?) -> Unit {
+            return { strValue, selfRef, stackController ->
+                if (checkStringInputValidity(strValue, multiOptional,associationMap)) {
+                    val intInput = strValue.split(" ").map { it.toInt() }
+                    when {
+                        intInput.contains(0) -> associationMap.get(0)?.second?.invoke(
+                            strValue,
+                            selfRef,
+                            stackController
+                        )
+                        else -> {
+                            for (integer in intInput) {
+                                associationMap.get(integer)?.second?.invoke(strValue, selfRef, stackController)
+                            }
                         }
                     }
+                } else {
+                    println("Incorrect input, repeating step")
+                    selfRef.repeatSelf()
                 }
-            }else{
-                println("Incorrect input, repeating step")
-                selfRef.repeatSelf()
             }
         }
-    }
 
-    private fun checkStringInputValidity(input: String,multiValue:Boolean):Boolean{
-        val splittedInput=input.split(" ")
+        private fun checkStringInputValidity(input: String,
+                                             multiValue: Boolean,
+                                             associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>): Boolean {
+            val splittedInput = input.split(" ")
 
-        if(!multiValue&&splittedInput.size>1) return false
-        try{
-            for (value in splittedInput){
-                value.toInt()
+            if (!multiValue && splittedInput.size > 1) return false
+            try {
+                if(splittedInput
+                        .map { it.toInt()}
+                        .filter {it !in associationMap.keys}
+                        .isNotEmpty())return false
+            } catch (exc: NumberFormatException) {
+                return false
             }
-        } catch (exc:NumberFormatException){
-            return false
+            return true
         }
-        return true
-    }
 
 
-
-    private  fun formOptionAssociationMap(optBundle: StepOptionBundle):Map<Int,Pair<String,
-               suspend (String, AbstractStep, IStackController?) -> Unit>>{
-        TreeMap<Int,Pair<String,
-                suspend (String, AbstractStep, IStackController?) -> Unit>>().apply {
-            put(0, GO_BACK_OPTION_LITERALL to defaultGoBackReaction)
-            var counter=1
-            for(option in optBundle){
-              put(counter++,option.visibleText to option.reaction)
+        private fun formOptionAssociationMap(optBundle: StepOptionBundle): Map<Int, Pair<String,
+                suspend (String, AbstractStep, IStackController?) -> Unit>> {
+            TreeMap<Int, Pair<String,
+                    suspend (String, AbstractStep, IStackController?) -> Unit>>().apply {
+                put(0, GO_BACK_OPTION_LITERALL to defaultGoBackReaction)
+                var counter = 1
+                for (option in optBundle) {
+                    put(counter++, option.visibleText to option.reaction)
+                }
+                return this
             }
-            return this
         }
+
+        val defaultGoBackReaction: suspend (
+            receivedValue: String,
+            selfRef: AbstractStep,
+            stackController: IStackController?
+        ) -> Unit = { value, selfRef, stackController ->
+            selfRef.parentStep?.let {
+                selfRef.addAncestorStep(it)
+            }
+        }
+
+
     }
-
-    val defaultGoBackReaction:suspend (receivedValue:String,
-                                       selfRef: AbstractStep,
-                                       stackController: IStackController?) -> Unit = { value, selfRef, stackController->
-    selfRef.parentStep?.let{
-        selfRef.addAncestorStep(it)
-    }
-                               }
-
-
-
-}
 }

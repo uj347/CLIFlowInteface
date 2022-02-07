@@ -18,8 +18,6 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    kapt ("com.google.dagger:dagger-compiler:2.40.5")
-    implementation ("com.google.dagger:dagger:2.40.5")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
 }
 

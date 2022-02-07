@@ -62,25 +62,22 @@ interface AbstractStep : Flow<Unit> {
     }
 
 
-    suspend fun <T, R> Flow<T>.flowChainProcessingInsertion(
+    suspend fun <T, R> Flow<T>.flowChainFullAwarenessInsertion(
         block: suspend (received: T, selfReference: AbstractStep, runStackController: IStackController?) -> R
     ): Flow<R> {
         return flow<R> {
-            this@flowChainProcessingInsertion.collect {
+            this@flowChainFullAwarenessInsertion.collect {
                 emit(block(it, this@AbstractStep, runStackController))
             }
         }
     }
 
-    suspend fun <T, R> Flow<T>.flowChainLayoutInsertion(
-        block: suspend (stateTokenInsertion:MutableSet<AbstractProperty<*>>?) -> R
-    ): Flow<R> {
-        return flow<R> {
-            this@flowChainLayoutInsertion.collect {
-                emit(block(stateToken ))
-            }
-        }
-    }
+
+
+
+
+
+
 }
 
 inline fun < reified T:Any> AbstractStep.addAssociatedProperty(name: String, value: T) {

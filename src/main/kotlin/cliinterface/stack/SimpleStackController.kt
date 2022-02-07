@@ -36,7 +36,6 @@ class SimpleStackController constructor(
             while (_stack.isNotEmpty()) {
 
                 _stack.pop().apply {
-                    println("Current contents of stack is:  $_stack")
                     associateWithStackController(this@SimpleStackController)
                     collect()
                 }

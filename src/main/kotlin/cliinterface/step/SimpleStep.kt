@@ -9,7 +9,7 @@ import java.util.*
 open class SimpleStep(
     override val name: String,
     override var parentStep: AbstractStep?,
-    layoutBlock: suspend (MutableSet<AbstractProperty<*>>?) -> Unit,
+    layoutBlock: suspend  (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> Unit,
     inputBlock: suspend (Unit) -> String = { oneLineCliInputBlock() },
     processingBlock: suspend (String, AbstractStep, IStackController?) -> Unit,
     override val onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit = { emptyCompletionBlock }
@@ -17,10 +17,10 @@ open class SimpleStep(
 
     override var runStackController: IStackController? = null
     override var stateToken: MutableSet<AbstractProperty<*>>? = null
-    override val layoutEtap: suspend Flow<Unit>.() -> Flow<Unit> = { flowChainLayoutInsertion(layoutBlock) }
+    override val layoutEtap: suspend Flow<Unit>.() -> Flow<Unit> = { flowChainFullAwarenessInsertion(layoutBlock) }
     override val inputEtap: suspend Flow<Unit>.() -> Flow<String> = { flowChainInsertion(inputBlock) }
     override val processingEtap: suspend Flow<String>.() -> Flow<Unit> =
-        { flowChainProcessingInsertion(processingBlock) }
+        { flowChainFullAwarenessInsertion(processingBlock) }
 
 
     override val adress: LinkedList<String>

@@ -100,7 +100,7 @@ suspend fun <T, R> Flow<T>.flowChainInsertion(
 }
 
 fun oneLineCliInputBlock(): String {
-    return Scanner(System.`in`).next()
+    return Scanner(System.`in`).nextLine()
 }
 
 val emptyCompletionBlock: FlowCollector<String?>.(Throwable?) -> Unit = { _ -> }

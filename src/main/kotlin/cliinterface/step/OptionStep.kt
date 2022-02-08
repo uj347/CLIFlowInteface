@@ -6,6 +6,7 @@ import cliinterface.stack.IStackController
 import cliinterface.step.stepoptions.StepOptionBundle
 import kotlinx.coroutines.flow.FlowCollector
 import java.util.*
+import java.util.regex.Pattern
 
 class OptionStep private constructor(
     name: String,
@@ -65,7 +66,8 @@ class OptionStep private constructor(
                 : suspend (String, AbstractStep, IStackController?) -> Unit {
             return { strValue, selfRef, stackController ->
                 if (checkStringInputValidity(strValue, multiOptional,associationMap)) {
-                    val intInput = strValue.split(" ").map { it.toInt() }
+                    val pattern=Pattern.compile("\\D+")
+                    val intInput = strValue.trim().split(pattern).map { it.toInt() }
                     when {
                         intInput.contains(0) -> associationMap.get(0)?.second?.invoke(
                             strValue,

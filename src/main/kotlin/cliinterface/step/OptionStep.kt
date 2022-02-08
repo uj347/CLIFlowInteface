@@ -28,7 +28,8 @@ class OptionStep private constructor(
             parentStep: AbstractStep?,
             multiOptional: Boolean,
             message: String,
-            optionBundle: StepOptionBundle
+            optionBundle: StepOptionBundle,
+            lastAction:(suspend (String, AbstractStep, IStackController?) -> Unit)?=null
         ): OptionStep {
             val associationMap = formOptionAssociationMap(optionBundle)
             val layoutBlock = generateLayoutBlock(associationMap, message)
@@ -61,7 +62,8 @@ class OptionStep private constructor(
 
         private fun generateProcessingBlock(
             associationMap: Map<Int, Pair<String,
-                    suspend (String, AbstractStep, IStackController?) -> Unit>>, multiOptional: Boolean
+                    suspend (String, AbstractStep, IStackController?) -> Unit>>, multiOptional: Boolean,
+            lastAction:(suspend (String, AbstractStep, IStackController?) -> Unit)?=null
         )
                 : suspend (String, AbstractStep, IStackController?) -> Unit {
             return { strValue, selfRef, stackController ->
@@ -78,6 +80,7 @@ class OptionStep private constructor(
                             for (integer in intInput) {
                                 associationMap.get(integer)?.second?.invoke(strValue, selfRef, stackController)
                             }
+                            lastAction?.invoke(strValue,selfRef,stackController)
                         }
                     }
                 } else {

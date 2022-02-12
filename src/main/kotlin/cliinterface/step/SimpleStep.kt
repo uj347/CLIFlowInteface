@@ -10,7 +10,7 @@ open class SimpleStep(
     override val name: String,
     override var parentStep: AbstractStep?,
     layoutBlock: suspend  (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> Unit,
-    inputBlock: suspend (Unit) -> String = { oneLineCliInputBlock() },
+    inputBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?)->String = ::oneLineCliInputBlock,
     processingBlock: suspend (String, AbstractStep, IStackController?) -> Unit,
     override val onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit = { emptyCompletionBlock }
 ) : AbstractStep {
@@ -18,7 +18,7 @@ open class SimpleStep(
     override var runStackController: IStackController? = null
     override var stateToken: MutableSet<AbstractProperty<*>>? = null
     override val layoutEtap: suspend Flow<Unit>.() -> Flow<Unit> = { flowChainFullAwarenessInsertion(layoutBlock) }
-    override val inputEtap: suspend Flow<Unit>.() -> Flow<String> = { flowChainInsertion(inputBlock) }
+    override val inputEtap: suspend Flow<Unit>.() -> Flow<String> = { flowChainFullAwarenessInsertion(inputBlock) }
     override val processingEtap: suspend Flow<String>.() -> Flow<Unit> =
         { flowChainFullAwarenessInsertion(processingBlock) }
 

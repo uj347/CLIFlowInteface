@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.coroutines.CoroutineContext
 
-class SimpleStackController constructor(
+open class SimpleStackController constructor(
     override val firstStep: AbstractStep,
     override val terminalStep: AbstractStep?,
     override val stateToken: MutableSet<AbstractProperty<*>>,

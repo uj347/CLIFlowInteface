@@ -89,17 +89,8 @@ inline fun < reified T:Any> AbstractStep.addAssociatedProperty(property: Abstrac
 }
 
 
-suspend fun <T, R> Flow<T>.flowChainInsertion(
-    block: suspend (T) -> R
-): Flow<R> {
-    return flow<R> {
-        this@flowChainInsertion.collect {
-            emit(block(it))
-        }
-    }
-}
 
-fun oneLineCliInputBlock(): String {
+suspend fun oneLineCliInputBlock(received: Unit, selfReference: AbstractStep, runStackController: IStackController?): String {
     return Scanner(System.`in`).nextLine()
 }
 

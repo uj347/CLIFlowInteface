@@ -14,7 +14,7 @@ class OptionStep private constructor(
     multiOptional: Boolean,
     associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>,
     layoutBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> Unit,
-    inputBlock: suspend (Unit) -> String,
+    inputBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?)->String,
     processingBlock: suspend (String, AbstractStep, IStackController?) -> Unit,
     onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit = { emptyCompletionBlock }
 ) : SimpleStep(
@@ -40,7 +40,7 @@ class OptionStep private constructor(
                 multiOptional,
                 associationMap,
                 layoutBlock,
-                { oneLineCliInputBlock() },
+                ::oneLineCliInputBlock,
                 processingBlock
             )
         }

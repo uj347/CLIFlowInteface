@@ -14,7 +14,7 @@ class OptionStep private constructor(
     multiOptional: Boolean,
     associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>,
     layoutBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> Unit,
-    inputBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?)->String,
+    inputBlock: suspend (received: Unit, selfReference: AbstractStep, runStackController: IStackController?) -> String,
     processingBlock: suspend (String, AbstractStep, IStackController?) -> Unit,
     onCompletionBlock: suspend FlowCollector<Unit>.(Throwable?) -> Unit = { emptyCompletionBlock }
 ) : SimpleStep(
@@ -29,11 +29,12 @@ class OptionStep private constructor(
             multiOptional: Boolean,
             message: String,
             optionBundle: StepOptionBundle,
-            lastAction:(suspend (String, AbstractStep, IStackController?) -> Unit)?=null
+            firstAction:(suspend (String, AbstractStep, IStackController?) -> Unit)? = null,
+            lastAction: (suspend (String, AbstractStep, IStackController?) -> Unit)? = null
         ): OptionStep {
             val associationMap = formOptionAssociationMap(optionBundle)
             val layoutBlock = generateLayoutBlock(associationMap, message)
-            val processingBlock = generateProcessingBlock(associationMap, multiOptional)
+            val processingBlock = generateProcessingBlock(associationMap, multiOptional,firstAction,lastAction)
             return OptionStep(
                 name,
                 parentStep,
@@ -63,12 +64,13 @@ class OptionStep private constructor(
         private fun generateProcessingBlock(
             associationMap: Map<Int, Pair<String,
                     suspend (String, AbstractStep, IStackController?) -> Unit>>, multiOptional: Boolean,
-            lastAction:(suspend (String, AbstractStep, IStackController?) -> Unit)?=null
+            firstAction: (suspend (String, AbstractStep, IStackController?) -> Unit)?,
+            lastAction: (suspend (String, AbstractStep, IStackController?) -> Unit)?
         )
                 : suspend (String, AbstractStep, IStackController?) -> Unit {
             return { strValue, selfRef, stackController ->
-                if (checkStringInputValidity(strValue, multiOptional,associationMap)) {
-                    val pattern=Pattern.compile("\\D+")
+                if (checkStringInputValidity(strValue, multiOptional, associationMap)) {
+                    val pattern = Pattern.compile("\\D+")
                     val intInput = strValue.trim().split(pattern).map { it.toInt() }
                     when {
                         intInput.contains(0) -> associationMap.get(0)?.second?.invoke(
@@ -77,10 +79,11 @@ class OptionStep private constructor(
                             stackController
                         )
                         else -> {
+                            firstAction?.invoke(strValue,selfRef,stackController)
                             for (integer in intInput) {
                                 associationMap.get(integer)?.second?.invoke(strValue, selfRef, stackController)
                             }
-                            lastAction?.invoke(strValue,selfRef,stackController)
+                            lastAction?.invoke(strValue, selfRef, stackController)
                         }
                     }
                 } else {
@@ -90,17 +93,20 @@ class OptionStep private constructor(
             }
         }
 
-        private fun checkStringInputValidity(input: String,
-                                             multiValue: Boolean,
-                                             associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>): Boolean {
+        private fun checkStringInputValidity(
+            input: String,
+            multiValue: Boolean,
+            associationMap: Map<Int, Pair<String, suspend (String, AbstractStep, IStackController?) -> Unit>>
+        ): Boolean {
             val splittedInput = input.split(" ")
 
             if (!multiValue && splittedInput.size > 1) return false
             try {
-                if(splittedInput
-                        .map { it.toInt()}
-                        .filter {it !in associationMap.keys}
-                        .isNotEmpty())return false
+                if (splittedInput
+                        .map { it.toInt() }
+                        .filter { it !in associationMap.keys }
+                        .isNotEmpty()
+                ) return false
             } catch (exc: NumberFormatException) {
                 return false
             }
